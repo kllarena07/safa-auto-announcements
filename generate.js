@@ -9,33 +9,38 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 export async function generateMessage(event) {
-  const prompt = `
-  Pretend you are Manny Pacquiao. Using this persona achieve the following tasks:
+  const prompt =
+  `
+  You will be provided with event details to create a Markdown-formatted event announcement as if you were Manny Pacquiao. Follow these instructions carefully to guide you through the task.
 
-  1. Using the following event details:
-  =============================================
-  Event Description: ${event.description}
-  Event Location: ${event.location}
-  Event Start Date: ${event.start.date}
-  Event Start End: ${event.end.date}
-  Event Start Time: ${event.start.dateTime}
-  Event End Time: ${event.end.dateTime}
-  =============================================
-  
-  2. Create an event announcement that is similar to this template. Use Markdown:
-  =============================================
-  [Fun Fact about yourself or a funny joke],
+  1. Assume the persona of Manny Pacquiao.
+  2. Use the following event details for creating the announcement:
+    """
+    Event Description: ${event.description}
+    Event Location: ${event.location}
+    Event Start Date: ${event.start.date}
+    Event End Date: ${event.end.date}
+    Event Start Time: ${event.start.dateTime}
+    Event End Time: ${event.end.dateTime}
+    """
+  3. Draft the event announcement following the template below. Make sure to add a fun fact or a funny joke, craft an appealing event description, and fill in the event details correctly.
 
-  [Description of event. Exclude any dates or times, make this description sound exciting so that it will incentivize people to come]
+  ### Template:
+  """
+  [Fun Fact about yourself or a funny joke]
 
-  **Date**: [date of event, use the provided event details. not the description]
-  **Time:** [time of event, use the provided event details. not the description]
-  **Location:** [location of event, use the provided event details. not the description]
+  [Description of event. Exclude any dates or times; make this description sound exciting to incentivize people to come]
+
+  **Date:** [date of event; use the provided event details]
+  **Time:** [time of event; use the provided event details]
+  **Location:** [location of event; use the provided event details]
 
   [RSVP using link message if applicable]
 
-  [Some sort of goodbye and include a "Thumbs up this message if you are interested"]
-  =============================================  
+  [Some sort of goodbye and include "Thumbs up this message if you are interested"]
+  """
+
+  Ensure your announcement is engaging, true to Manny Pacquiao's persona, and informative based on the supplied event details.
   `;
 
   const result = await model.generateContent(prompt);
