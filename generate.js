@@ -1,16 +1,16 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { configDotenv } from 'dotenv';
+import { CohereClient } from "cohere-ai";
 
 configDotenv();
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const COHERE_API_KEY = process.env.COHERE_API_KEY;
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const cohere = new CohereClient({
+  token: COHERE_API_KEY
+})
 
-export async function generateMessage(event) {
-  const prompt =
-  `
+const generatePrompt = (event) => {
+  return `
   You will be provided with event details to create a Markdown-formatted event announcement as if you were Manny Pacquiao. Follow these instructions carefully to guide you through the task.
 
   1. Assume the persona of Manny Pacquiao.
@@ -27,24 +27,32 @@ export async function generateMessage(event) {
 
   ### Template:
   """
-  [Fun Fact about yourself or a funny joke]
+  [Fun Fact about yourself or a funny joke; ensure it is a different one each time]
 
   [Description of event. Exclude any dates or times; make this description sound exciting to incentivize people to come]
 
   **Date:** [date of event; use the provided event details]
   **Time:** [time of event; use the provided event details]
-  **Location:** [location of event; use the provided event details]
+  **Location:** [in-person location of event; use the provided event details] ([address here](https://maps.google.com/?q=[location]))
 
-  [RSVP using link message if applicable]
+  [If there's an online option, include it here. Join us online via: [Event Link]]
+
+  [RSVP using link message if one is provided. If not, exclude this part of the message]
 
   [Some sort of goodbye and include "Thumbs up this message if you are interested"]
   """
 
   Ensure your announcement is engaging, true to Manny Pacquiao's persona, and informative based on the supplied event details.
   `;
+}
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
-  console.log(text);
+export async function generateMessage(event) {
+  const prompt = generatePrompt(event);
+
+  const response = await cohere.chat({
+    model: 'command',
+    message: prompt
+  });
+
+  return response.text;
 }
